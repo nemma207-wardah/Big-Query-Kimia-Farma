@@ -1,0 +1,44 @@
+CREATE TABLE `Kimia_Farma.kf_Tabel_analisis` AS
+SELECT
+  t.transaction_id,
+  t.date,
+  t.branch_id,
+  c.branch_name,
+  c.kota,
+  c.provinsi,
+  c.rating AS rating_cabang,
+  t.customer_name,
+  t.product_id,
+  p.product_name,
+  t.price AS actual_price,
+  t.discount_percentage,
+
+  -- Persentase Gross Laba
+  CASE
+    WHEN t.price <= 50000 THEN 0.10
+    WHEN t.price > 50000 AND t.price <= 100000 THEN 0.15
+    WHEN t.price > 100000 AND t.price <= 300000 THEN 0.20
+    WHEN t.price > 300000 AND t.price <= 500000 THEN 0.25
+    ELSE 0.30
+  END AS persentase_gross_laba,
+
+  -- Nett Sales
+  t.price - (t.price * t.discount_percentage) AS nett_sales,
+
+  -- Nett Profit
+  (t.price - (t.price * t.discount_percentage)) *
+  CASE
+    WHEN t.price <= 50000 THEN 0.10
+    WHEN t.price > 50000 AND t.price <= 100000 THEN 0.15
+    WHEN t.price > 100000 AND t.price <= 300000 THEN 0.20
+    WHEN t.price > 300000 AND t.price <= 500000 THEN 0.25
+    ELSE 0.30
+  END AS nett_profit,
+
+  t.rating AS rating_transaksi
+
+FROM `Kimia_Farma.kf_final_transaction` t
+LEFT JOIN `Kimia_Farma.kf_product` p
+ON t.product_id = p.product_id
+LEFT JOIN `Kimia_Farma.kf_kantor_cabang` c
+ON t.branch_id = c.branch_id
